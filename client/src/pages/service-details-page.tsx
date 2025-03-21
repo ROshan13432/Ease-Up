@@ -26,8 +26,7 @@ import { Button } from "@/components/ui/button";
 const taskFormSchema = z.object({
   selectedTasks: z.array(z.string()),
   preferredTime: z.string().optional(),
-  appointmentDate: z.string().optional(),
-  address: z.string().min(1, "Address is required")
+  appointmentDate: z.string().optional()
 });
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -58,8 +57,7 @@ export default function ServiceDetailsPage() {
     defaultValues: {
       selectedTasks: [],
       preferredTime: "",
-      appointmentDate: "",
-      address: ""
+      appointmentDate: ""
     }
   });
 
@@ -70,7 +68,7 @@ export default function ServiceDetailsPage() {
   const onSubmit = (data: TaskFormValues) => {
     console.log("Form submitted:", data);
     // Navigate to booking page or provider selection
-    navigate(`/booking/${id}/provider-selection?tasks=${data.selectedTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}&address=${encodeURIComponent(data.address)}`);
+    navigate(`/booking/${id}/provider-selection?tasks=${data.selectedTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}`);
   };
 
   const handleHelpClick = () => {
@@ -264,15 +262,7 @@ export default function ServiceDetailsPage() {
                         />
                       </div>
                       
-                      <div className="flex items-center">
-                        <span className="material-icons text-gray-600 mr-2">place</span>
-                        <input
-                          type="text"
-                          placeholder="Enter your address"
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                          {...form.register("address")}
-                        />
-                      </div>
+
                     </div>
                     
                     <Button 
