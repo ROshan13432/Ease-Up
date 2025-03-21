@@ -6,9 +6,9 @@ import Header from "@/components/layout/header";
 import BottomNavigation from "@/components/layout/bottom-navigation";
 import VoiceAssistantButton from "@/components/layout/voice-assistant-button";
 import HelpOverlay from "@/components/layout/help-overlay";
-import ServiceCard from "@/components/services/service-card";
 import AppointmentCard from "@/components/services/appointment-card";
 import { Service, Booking } from "@shared/schema";
+import { Loader2 } from "lucide-react";
 
 export default function HomePage() {
   const [showHelp, setShowHelp] = useState(false);
@@ -45,37 +45,77 @@ export default function HomePage() {
     setShowHelp(false);
   };
 
+  // Function to get the background color class based on service id
+  const getServiceBgColor = (id: number) => {
+    const colors = {
+      1: "bg-[#373276]", // Dark blue/purple for Household Tasks
+      2: "bg-[#7E3A00]", // Brown for Yard & Maintenance
+      3: "bg-[#0A5E44]", // Dark green for Grocery Shopping
+      4: "bg-[#841C44]", // Maroon/burgundy for Caregiver Services
+      5: "bg-[#4B2182]", // Purple for Other Services
+    };
+    return colors[id as keyof typeof colors] || "bg-primary";
+  };
+
+  // Function to get the icon element based on service icon
+  const getServiceIcon = (icon: string) => {
+    const iconMap: Record<string, React.ReactNode> = {
+      "cleaning_services": <span className="material-icons text-white">home</span>,
+      "yard": <span className="material-icons text-white">build</span>,
+      "shopping_basket": <span className="material-icons text-white">shopping_cart</span>,
+      "health_and_safety": <span className="material-icons text-white">favorite</span>,
+      "more_horiz": <span className="material-icons text-white">more_horiz</span>,
+    };
+    return iconMap[icon] || <span className="material-icons text-white">{icon}</span>;
+  };
+
   return (
-    <div className="min-h-screen flex flex-col pb-20">
+    <div className="min-h-screen flex flex-col pb-20 bg-[#f6f8f9]">
       <Header onHelpClick={handleHelpClick} />
       
       <main className="flex-1 container mx-auto p-4 md:p-6">
-        <section className="mb-8">
-          <h2 className="text-3xl font-bold mb-4">Welcome, {user?.fullName || user?.username}</h2>
-          <p className="text-xl mb-6">What type of help do you need today?</p>
+        <section className="mb-6">
+          <h1 className="text-3xl font-bold text-[#1e293b] mb-1">Care Assistant</h1>
+          <p className="text-lg text-[#475569]">How can we help you today?</p>
         </section>
 
         <section className="mb-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {isLoadingServices ? (
-              // Loading state for services
-              Array(4).fill(0).map((_, index) => (
-                <div key={index} className="h-48 bg-neutral-200 animate-pulse rounded-xl"></div>
-              ))
-            ) : (
-              services?.map((service) => (
-                <ServiceCard
-                  key={service.id}
-                  service={service}
-                  onClick={() => handleServiceClick(service.id)}
-                />
-              ))
-            )}
-          </div>
+          {isLoadingServices ? (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {services?.map((service) => (
+                <div 
+                  key={service.id} 
+                  className={`${getServiceBgColor(service.id)} rounded-xl p-6 shadow-md text-white`}
+                >
+                  <div className="flex items-start mb-4">
+                    <div className="bg-white/20 rounded-xl w-14 h-14 flex items-center justify-center mr-4">
+                      {getServiceIcon(service.icon)}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-xl font-semibold mb-1">{service.name}</h3>
+                      <p className="text-white/90">{service.shortDescription}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => handleServiceClick(service.id)}
+                    className="flex items-center text-white mt-2 hover:underline focus:outline-none focus:ring-2 focus:ring-white/70 rounded-md px-2 py-1"
+                    aria-label={`Book ${service.name} service`}
+                  >
+                    <span className="font-medium">Book Service</span>
+                    <span className="material-icons ml-1">arrow_forward</span>
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Quick Access</h2>
+          <h2 className="text-2xl font-bold mb-4 text-[#1e293b]">Quick Access</h2>
           <div className="bg-white rounded-xl p-4 shadow-md">
             <div className="grid grid-cols-2 gap-4">
               <button 
@@ -115,11 +155,12 @@ export default function HomePage() {
         </section>
 
         <section className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Upcoming Appointments</h2>
+          <h2 className="text-2xl font-bold mb-4 text-[#1e293b]">Upcoming Appointments</h2>
           
           {isLoadingBookings ? (
-            // Loading state for bookings
-            <div className="h-32 bg-neutral-200 animate-pulse rounded-xl"></div>
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
           ) : upcomingBookings.length > 0 ? (
             <>
               {upcomingBookings.slice(0, 2).map((booking) => (

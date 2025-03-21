@@ -1,33 +1,76 @@
 import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import Header from "@/components/layout/header";
 import BottomNavigation from "@/components/layout/bottom-navigation";
 import VoiceAssistantButton from "@/components/layout/voice-assistant-button";
 import HelpOverlay from "@/components/layout/help-overlay";
-import ProviderCard from "@/components/services/provider-card";
 import { Service, Provider } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
+import { 
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel
+} from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+// Define schema for the form
+const taskFormSchema = z.object({
+  selectedTasks: z.array(z.string()),
+  preferredTime: z.string().optional(),
+  appointmentDate: z.string().optional(),
+  address: z.string().min(1, "Address is required")
+});
+
+type TaskFormValues = z.infer<typeof taskFormSchema>;
 
 export default function ServiceDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const [showHelp, setShowHelp] = useState(false);
   const [, navigate] = useLocation();
 
+  // Get service color based on id
+  const getServiceBgColor = (serviceId: string) => {
+    const colors: Record<string, string> = {
+      "1": "bg-[#373276]", // Dark blue/purple for Household Tasks
+      "2": "bg-[#7E3A00]", // Brown for Yard & Maintenance
+      "3": "bg-[#0A5E44]", // Dark green for Grocery Shopping
+      "4": "bg-[#841C44]", // Maroon/burgundy for Caregiver Services
+      "5": "bg-[#4B2182]", // Purple for Other Services
+    };
+    return colors[serviceId] || "bg-primary";
+  };
+
   const { data: service, isLoading: isLoadingService } = useQuery<Service>({
     queryKey: [`/api/services/${id}`],
   });
 
-  const { data: providers, isLoading: isLoadingProviders } = useQuery<Provider[]>({
-    queryKey: [`/api/services/${id}/providers`],
+  const form = useForm<TaskFormValues>({
+    resolver: zodResolver(taskFormSchema),
+    defaultValues: {
+      selectedTasks: [],
+      preferredTime: "",
+      appointmentDate: "",
+      address: ""
+    }
   });
 
   const handleNavigateBack = () => {
     navigate("/");
   };
 
-  const handleBookProvider = (providerId: number) => {
-    navigate(`/booking/${id}/${providerId}`);
+  const onSubmit = (data: TaskFormValues) => {
+    console.log("Form submitted:", data);
+    // Navigate to booking page or provider selection
+    navigate(`/booking/${id}/provider-selection?tasks=${data.selectedTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}&address=${encodeURIComponent(data.address)}`);
   };
 
   const handleHelpClick = () => {
@@ -38,78 +81,179 @@ export default function ServiceDetailsPage() {
     setShowHelp(false);
   };
 
+  // Extract task names and descriptions from inclusions if it's Household Tasks service (id === "1")
+  const getTasksFromInclusions = () => {
+    if (!service || id !== "1") return [];
+    
+    return service.inclusions.map(inclusion => {
+      const [name, description] = inclusion.split(": ");
+      return { name, description };
+    });
+  };
+
+  const tasks = getTasksFromInclusions();
+
   return (
-    <div className="min-h-screen flex flex-col pb-20">
+    <div className="min-h-screen flex flex-col pb-20 bg-[#f6f8f9]">
       <Header onHelpClick={handleHelpClick} />
       
       <main className="flex-1 container mx-auto p-4 md:p-6">
-        <button 
-          className="flex items-center text-primary text-lg mb-4 hover:text-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-4 py-2"
-          onClick={handleNavigateBack}
-          aria-label="Go back to services list"
-        >
-          <span className="material-icons mr-2">arrow_back</span>
-          <span>Back to Services</span>
-        </button>
-        
         {isLoadingService ? (
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-3/4" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-6 w-full" />
-            <Skeleton className="h-64 w-full mt-6" />
+          <div className="flex justify-center items-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         ) : service ? (
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold flex items-center mb-4">
-              <span className={`material-icons bg-primary text-white p-2 rounded-full mr-3 text-3xl`}>
-                {service.icon}
-              </span>
-              {service.name}
-            </h2>
+          <div className={`${getServiceBgColor(id)} text-white rounded-xl p-6 shadow-md mb-6`}>
+            <button 
+              className="flex items-center text-white text-sm mb-6 hover:underline focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-2 py-1"
+              onClick={handleNavigateBack}
+              aria-label="Go back to services list"
+            >
+              <span className="material-icons mr-1 text-sm">arrow_back</span>
+              <span>Back to Services</span>
+            </button>
             
-            <p className="text-xl text-neutral-600 mb-6">{service.description}</p>
-            
-            <div className="bg-white rounded-xl p-6 shadow-md mb-6">
-              <h3 className="text-2xl font-medium mb-4">What's included:</h3>
-              <ul className="text-lg space-y-3">
-                {service.inclusions.map((inclusion, index) => (
-                  <li key={index} className="flex items-start">
-                    <span className="material-icons text-secondary mr-2 mt-1">check_circle</span>
-                    <span>{inclusion}</span>
-                  </li>
-                ))}
-              </ul>
+            <div className="flex items-start mb-4">
+              <div className="bg-white/20 rounded-xl w-14 h-14 flex items-center justify-center mr-4">
+                <span className="material-icons">
+                  {service.icon === "cleaning_services" ? "home" : 
+                   service.icon === "yard" ? "build" :
+                   service.icon === "shopping_basket" ? "shopping_cart" :
+                   service.icon === "health_and_safety" ? "favorite" : 
+                   service.icon}
+                </span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold">{service.name}</h2>
+                <p className="text-white/90">{service.description}</p>
+              </div>
             </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-md mb-8">
-              <h3 className="text-2xl font-medium mb-4">Available Service Providers</h3>
-              
-              {isLoadingProviders ? (
-                <div className="space-y-6">
-                  <Skeleton className="h-40 w-full" />
-                  <Skeleton className="h-40 w-full" />
-                </div>
-              ) : providers && providers.length > 0 ? (
-                <div className="space-y-6">
-                  {providers.map((provider) => (
-                    <ProviderCard 
-                      key={provider.id} 
-                      provider={provider} 
-                      onBookClick={() => handleBookProvider(provider.id)} 
-                    />
+
+            {id === "1" && tasks.length > 0 ? (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6">
+                  <div className="bg-white rounded-xl p-6 text-black">
+                    <h3 className="text-xl font-semibold mb-4 text-gray-800">Select Tasks</h3>
+                    
+                    {tasks.map((task, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4 mb-3 flex items-center justify-between">
+                        <div className="flex items-start">
+                          <div className="mr-4">
+                            {index === 0 ? (
+                              <span className="material-icons text-gray-600">cleaning_services</span>
+                            ) : index === 1 ? (
+                              <span className="material-icons text-gray-600">restaurant</span>
+                            ) : index === 2 ? (
+                              <span className="material-icons text-gray-600">local_laundry_service</span>
+                            ) : index === 3 ? (
+                              <span className="material-icons text-gray-600">cleaning</span>
+                            ) : (
+                              <span className="material-icons text-gray-600">bed</span>
+                            )}
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-800">{task.name}</h4>
+                            <p className="text-sm text-gray-600">{task.description}</p>
+                          </div>
+                        </div>
+                        <FormField
+                          control={form.control}
+                          name="selectedTasks"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <input
+                                  type="checkbox"
+                                  className="h-5 w-5 border-2 border-gray-300 rounded-full focus:ring-2 focus:ring-primary"
+                                  value={task.name}
+                                  checked={field.value?.includes(task.name)}
+                                  onChange={(e) => {
+                                    const value = task.name;
+                                    const values = [...(field.value || [])];
+                                    if (e.target.checked) {
+                                      values.push(value);
+                                    } else {
+                                      const index = values.indexOf(value);
+                                      if (index !== -1) {
+                                        values.splice(index, 1);
+                                      }
+                                    }
+                                    field.onChange(values);
+                                  }}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    ))}
+
+                    <div className="mt-6 space-y-4">
+                      <div className="flex items-center">
+                        <span className="material-icons text-gray-600 mr-2">schedule</span>
+                        <select 
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                          {...form.register("preferredTime")}
+                        >
+                          <option value="">Select preferred time</option>
+                          <option value="morning">Morning (8am - 12pm)</option>
+                          <option value="afternoon">Afternoon (12pm - 4pm)</option>
+                          <option value="evening">Evening (4pm - 8pm)</option>
+                        </select>
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="material-icons text-gray-600 mr-2">calendar_today</span>
+                        <input
+                          type="date"
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                          {...form.register("appointmentDate")}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center">
+                        <span className="material-icons text-gray-600 mr-2">place</span>
+                        <input
+                          type="text"
+                          placeholder="Enter your address"
+                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                          {...form.register("address")}
+                        />
+                      </div>
+                    </div>
+                    
+                    <Button 
+                      type="submit" 
+                      className="w-full mt-6 py-4 bg-[#373276] hover:bg-[#2D2A60] text-white font-medium rounded-lg"
+                    >
+                      Request Service
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            ) : (
+              <div className="bg-white rounded-xl p-6 text-black mt-6">
+                <h3 className="text-xl font-semibold mb-4 text-gray-800">Service Details</h3>
+                <ul className="space-y-4">
+                  {service.inclusions.map((inclusion, index) => (
+                    <li key={index} className="flex items-start">
+                      <span className="material-icons text-primary mr-2 mt-1">check_circle</span>
+                      <span className="text-gray-700">{inclusion}</span>
+                    </li>
                   ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <span className="material-icons text-neutral-400 text-5xl mb-2">person_off</span>
-                  <p className="text-xl text-neutral-600">No providers available at this time</p>
-                </div>
-              )}
-            </div>
+                </ul>
+                
+                <Button 
+                  onClick={() => navigate(`/booking/${id}/provider-selection`)}
+                  className={`w-full mt-6 py-4 ${getServiceBgColor(id)} hover:opacity-90 text-white font-medium rounded-lg`}
+                >
+                  Request Service
+                </Button>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12 bg-white rounded-xl shadow-md">
             <span className="material-icons text-neutral-400 text-5xl mb-2">error_outline</span>
             <p className="text-xl text-neutral-600">Service not found</p>
             <button 

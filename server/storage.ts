@@ -250,23 +250,23 @@ export class MemStorage implements IStorage {
     const servicesData: Service[] = [
       {
         id: 1,
-        name: "House Cleaning",
-        shortDescription: "Get help with cleaning your home, including dusting, vacuuming, and more.",
-        description: "Professional cleaning services for your home, including dusting, vacuuming, mopping, bathroom and kitchen cleaning.",
+        name: "Household tasks",
+        shortDescription: "Help with cleaning, cooking, laundry, and daily chores",
+        description: "Help with cleaning, cooking, laundry, and daily chores",
         icon: "cleaning_services",
         inclusions: [
-          "Dusting of all surfaces and furniture",
-          "Vacuuming carpets and rugs",
-          "Mopping hard floors",
-          "Bathroom cleaning (toilet, shower, sink)",
-          "Kitchen cleaning (counters, sink, outside of appliances)"
+          "General Cleaning: Dusting, vacuuming, mopping, and bathroom cleaning",
+          "Meal Preparation: Cooking meals, meal planning, and kitchen organization",
+          "Laundry Services: Washing, drying, folding, and ironing clothes",
+          "Deep Cleaning: Intensive cleaning of specific areas or entire home",
+          "Bedroom Care: Changing linens, organizing, and deep cleaning"
         ]
       },
       {
         id: 2,
-        name: "Yard Work",
-        shortDescription: "Assistance with lawn mowing, gardening, and outdoor maintenance tasks.",
-        description: "Complete yard maintenance services including lawn mowing, garden care, leaf removal, and seasonal outdoor maintenance.",
+        name: "Yard & Maintenance",
+        shortDescription: "Lawn care, gardening, and home maintenance services",
+        description: "Lawn care, gardening, and home maintenance services",
         icon: "yard",
         inclusions: [
           "Lawn mowing and edging",
@@ -279,8 +279,8 @@ export class MemStorage implements IStorage {
       {
         id: 3,
         name: "Grocery Shopping",
-        shortDescription: "Someone to help you shop for groceries or deliver them to your home.",
-        description: "Assistance with grocery shopping, including creating shopping lists, picking up items, and delivering them to your home.",
+        shortDescription: "Assistance with shopping and delivery of groceries",
+        description: "Assistance with shopping and delivery of groceries",
         icon: "shopping_basket",
         inclusions: [
           "Creating grocery lists",
@@ -293,8 +293,8 @@ export class MemStorage implements IStorage {
       {
         id: 4,
         name: "Caregiver Services",
-        shortDescription: "Professional caregivers offering personal care, companionship, and support.",
-        description: "Professional caregiving services providing personal assistance, medication reminders, meal preparation, and companionship.",
+        shortDescription: "Professional care, companionship, and medical support",
+        description: "Professional care, companionship, and medical support",
         icon: "health_and_safety",
         inclusions: [
           "Personal care assistance",
@@ -302,6 +302,20 @@ export class MemStorage implements IStorage {
           "Meal preparation",
           "Light housekeeping",
           "Companionship and emotional support"
+        ]
+      },
+      {
+        id: 5,
+        name: "Other Services",
+        shortDescription: "Request any other assistance not listed above",
+        description: "Request any other assistance not listed above",
+        icon: "more_horiz",
+        inclusions: [
+          "Transportation assistance",
+          "Technology help",
+          "Pet care",
+          "Errands and deliveries",
+          "Small repairs and installations"
         ]
       }
     ];
@@ -321,7 +335,7 @@ export class MemStorage implements IStorage {
         rating: 4.5,
         reviews: 129,
         tags: ["Available Weekdays", "Pet Friendly", "Eco Products"],
-        services: ["House Cleaning"]
+        services: ["Household tasks"]
       },
       {
         id: 2,
@@ -330,7 +344,7 @@ export class MemStorage implements IStorage {
         rating: 5.0,
         reviews: 87,
         tags: ["Weekend Availability", "Deep Cleaning", "Senior Specialist"],
-        services: ["House Cleaning"]
+        services: ["Household tasks"]
       },
       {
         id: 3,
@@ -339,7 +353,7 @@ export class MemStorage implements IStorage {
         rating: 4.8,
         reviews: 95,
         tags: ["Organic Methods", "Equipment Provided", "7-Day Availability"],
-        services: ["Yard Work"]
+        services: ["Yard & Maintenance"]
       },
       {
         id: 4,
@@ -358,6 +372,15 @@ export class MemStorage implements IStorage {
         reviews: 156,
         tags: ["Elder Care", "Medical Background", "Overnight Available"],
         services: ["Caregiver Services"]
+      },
+      {
+        id: 6,
+        name: "Emily Rodriguez",
+        experience: "7 years experience, background checked, versatile assistance provider",
+        rating: 4.6,
+        reviews: 93,
+        tags: ["Flexible Schedule", "Technology Savvy", "Transportation Available"],
+        services: ["Other Services"]
       }
     ];
     
