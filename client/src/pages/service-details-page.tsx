@@ -81,13 +81,18 @@ export default function ServiceDetailsPage() {
     setShowHelp(false);
   };
 
-  // Extract task names and descriptions from inclusions if it's Household Tasks service (id === "1")
+  // Extract task names and descriptions from inclusions for all services
   const getTasksFromInclusions = () => {
-    if (!service || id !== "1") return [];
+    if (!service) return [];
     
     return service.inclusions.map(inclusion => {
-      const [name, description] = inclusion.split(": ");
-      return { name, description };
+      // Handle both formats: with colon or without
+      if (inclusion.includes(": ")) {
+        const [name, description] = inclusion.split(": ");
+        return { name, description };
+      } else {
+        return { name: inclusion, description: "" };
+      }
     });
   };
 
@@ -129,7 +134,7 @@ export default function ServiceDetailsPage() {
               </div>
             </div>
 
-            {id === "1" && tasks.length > 0 ? (
+            {tasks.length > 0 ? (
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 mt-6">
                   <div className="bg-white rounded-xl p-6 text-black">
@@ -139,21 +144,69 @@ export default function ServiceDetailsPage() {
                       <div key={index} className="border border-gray-200 rounded-lg p-4 mb-3 flex items-center justify-between">
                         <div className="flex items-start">
                           <div className="mr-4">
-                            {index === 0 ? (
-                              <span className="material-icons text-gray-600">cleaning_services</span>
-                            ) : index === 1 ? (
-                              <span className="material-icons text-gray-600">restaurant</span>
-                            ) : index === 2 ? (
-                              <span className="material-icons text-gray-600">local_laundry_service</span>
-                            ) : index === 3 ? (
-                              <span className="material-icons text-gray-600">cleaning</span>
+                            {/* Select appropriate icon based on service type and task index */}
+                            {id === "1" ? (
+                              // Household tasks icons
+                              index === 0 ? (
+                                <span className="material-icons text-gray-600">cleaning_services</span>
+                              ) : index === 1 ? (
+                                <span className="material-icons text-gray-600">restaurant</span>
+                              ) : index === 2 ? (
+                                <span className="material-icons text-gray-600">local_laundry_service</span>
+                              ) : index === 3 ? (
+                                <span className="material-icons text-gray-600">cleaning</span>
+                              ) : (
+                                <span className="material-icons text-gray-600">bed</span>
+                              )
+                            ) : id === "2" ? (
+                              // Yard & Maintenance icons
+                              index === 0 ? (
+                                <span className="material-icons text-gray-600">grass</span>
+                              ) : index === 1 ? (
+                                <span className="material-icons text-gray-600">yard</span>
+                              ) : index === 2 ? (
+                                <span className="material-icons text-gray-600">delete_sweep</span>
+                              ) : index === 3 ? (
+                                <span className="material-icons text-gray-600">content_cut</span>
+                              ) : (
+                                <span className="material-icons text-gray-600">build</span>
+                              )
+                            ) : id === "4" ? (
+                              // Caregiver Services icons
+                              index === 0 ? (
+                                <span className="material-icons text-gray-600">accessibility</span>
+                              ) : index === 1 ? (
+                                <span className="material-icons text-gray-600">medical_services</span>
+                              ) : index === 2 ? (
+                                <span className="material-icons text-gray-600">restaurant</span>
+                              ) : index === 3 ? (
+                                <span className="material-icons text-gray-600">cleaning_services</span>
+                              ) : (
+                                <span className="material-icons text-gray-600">favorite</span>
+                              )
+                            ) : id === "3" ? (
+                              // Grocery Shopping icons
+                              index === 0 ? (
+                                <span className="material-icons text-gray-600">list_alt</span>
+                              ) : index === 1 ? (
+                                <span className="material-icons text-gray-600">shopping_cart</span>
+                              ) : index === 2 ? (
+                                <span className="material-icons text-gray-600">shopping_basket</span>
+                              ) : index === 3 ? (
+                                <span className="material-icons text-gray-600">local_shipping</span>
+                              ) : (
+                                <span className="material-icons text-gray-600">kitchen</span>
+                              )
                             ) : (
-                              <span className="material-icons text-gray-600">bed</span>
+                              // Default icon for Other Services
+                              <span className="material-icons text-gray-600">more_horiz</span>
                             )}
                           </div>
                           <div>
                             <h4 className="font-medium text-gray-800">{task.name}</h4>
-                            <p className="text-sm text-gray-600">{task.description}</p>
+                            {task.description && (
+                              <p className="text-sm text-gray-600">{task.description}</p>
+                            )}
                           </div>
                         </div>
                         <FormField
@@ -224,7 +277,7 @@ export default function ServiceDetailsPage() {
                     
                     <Button 
                       type="submit" 
-                      className="w-full mt-6 py-4 bg-[#373276] hover:bg-[#2D2A60] text-white font-medium rounded-lg"
+                      className={`w-full mt-6 py-4 ${getServiceBgColor(id)} hover:opacity-90 text-white font-medium rounded-lg`}
                     >
                       Request Service
                     </Button>
