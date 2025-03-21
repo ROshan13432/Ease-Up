@@ -1,12 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
 import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Set up authentication routes
-  setupAuth(app);
-
   // Services
   app.get("/api/services", async (req, res) => {
     try {
@@ -53,7 +49,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Provider bookings (for checking availability)
   app.get("/api/providers/:id/bookings", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
       const bookings = await storage.getBookingsByProvider(parseInt(req.params.id));
@@ -65,10 +62,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Bookings
   app.get("/api/bookings", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
-      const bookings = await storage.getBookingsByUser(req.user.id);
+      const bookings = await storage.getBookingsByUser(defaultUserId);
       res.json(bookings);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -76,12 +74,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bookings", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
       const booking = await storage.createBooking({
         ...req.body,
-        userId: req.user.id
+        userId: defaultUserId
       });
       res.status(201).json(booking);
     } catch (error: any) {
@@ -90,7 +89,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/bookings/:id", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
       const bookingId = parseInt(req.params.id);
@@ -98,10 +98,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
-      }
-      
-      if (booking.userId !== req.user.id) {
-        return res.status(403).json({ message: "Not authorized to cancel this booking" });
       }
       
       await storage.deleteBooking(bookingId);
@@ -113,10 +109,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Favorites
   app.get("/api/user/favorites", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
-      const favorites = await storage.getFavoriteProviders(req.user.id);
+      const favorites = await storage.getFavoriteProviders(defaultUserId);
       res.json(favorites);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -124,10 +121,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/user/favorites", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
-      await storage.addFavoriteProvider(req.user.id, req.body.providerId);
+      await storage.addFavoriteProvider(defaultUserId, req.body.providerId);
       res.sendStatus(201);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -135,10 +133,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/user/favorites/:providerId", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
-      await storage.removeFavoriteProvider(req.user.id, parseInt(req.params.providerId));
+      await storage.removeFavoriteProvider(defaultUserId, parseInt(req.params.providerId));
       res.sendStatus(204);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -147,10 +146,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Messages
   app.get("/api/messages/providers", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
-      const providers = await storage.getMessagedProviders(req.user.id);
+      const providers = await storage.getMessagedProviders(defaultUserId);
       res.json(providers);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -158,10 +158,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/messages/provider/:providerId", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
-      const messages = await storage.getMessages(req.user.id, parseInt(req.params.providerId));
+      const messages = await storage.getMessages(defaultUserId, parseInt(req.params.providerId));
       res.json(messages);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -169,29 +170,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/messages", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
+    // Use a default user ID since we're not requiring authentication
+    const defaultUserId = 1;
     
     try {
       const message = await storage.createMessage({
-        userId: req.user.id,
+        userId: defaultUserId,
         providerId: req.body.providerId,
         content: req.body.content,
         fromUser: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date()
       });
       
       // Simulate a response from the provider
       setTimeout(async () => {
         await storage.createMessage({
-          userId: req.user.id,
+          userId: defaultUserId,
           providerId: req.body.providerId,
           content: `Thank you for your message. I'll get back to you shortly.`,
           fromUser: false,
-          timestamp: new Date().toISOString()
+          timestamp: new Date()
         });
       }, 10000);
       
       res.status(201).json(message);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Add endpoint for the provider selection
+  app.get("/api/providers/service/:serviceId", async (req, res) => {
+    try {
+      const serviceId = parseInt(req.params.serviceId);
+      const providers = await storage.getProvidersByService(serviceId);
+      res.json(providers);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Add custom endpoint for task-specific providers
+  app.get("/api/tasks/:taskName/providers", async (req, res) => {
+    try {
+      // This would typically filter providers by task specialization
+      // For now, we'll just return all providers
+      const allProviders = [];
+      for (let i = 1; i <= 5; i++) {
+        const serviceProviders = await storage.getProvidersByService(i);
+        allProviders.push(...serviceProviders);
+      }
+      res.json(allProviders);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
