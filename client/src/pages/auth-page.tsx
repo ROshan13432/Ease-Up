@@ -83,7 +83,7 @@ export default function AuthPage() {
       <div className="md:w-1/2 bg-primary p-6 flex flex-col justify-center items-center text-white">
         <div className="max-w-md mx-auto">
           <div className="mb-8">
-            <h1 className="text-4xl font-bold mb-4">CareBridge</h1>
+            <h1 className="text-4xl font-bold mb-4">Ease Up</h1>
             <p className="text-xl opacity-90">Connecting you to reliable help for your everyday needs</p>
           </div>
           
