@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
 import Header from "@/components/layout/header";
 import BottomNavigation from "@/components/layout/bottom-navigation";
 import VoiceAssistantButton from "@/components/layout/voice-assistant-button";
@@ -13,7 +12,6 @@ import { Loader2 } from "lucide-react";
 export default function HomePage() {
   const [showHelp, setShowHelp] = useState(false);
   const [, navigate] = useLocation();
-  const { user } = useAuth();
 
   const { data: services, isLoading: isLoadingServices } = useQuery<Service[]>({
     queryKey: ["/api/services"],
@@ -21,13 +19,10 @@ export default function HomePage() {
 
   const { data: bookings, isLoading: isLoadingBookings } = useQuery<Booking[]>({
     queryKey: ["/api/bookings"],
+    enabled: false, // Disable this query since we don't have authentication
   });
 
-  const upcomingBookings = bookings?.filter(
-    (booking) => new Date(booking.appointmentDate) >= new Date()
-  ).sort((a, b) => 
-    new Date(a.appointmentDate).getTime() - new Date(b.appointmentDate).getTime()
-  ) || [];
+  const upcomingBookings: Booking[] = [];
 
   const handleServiceClick = (serviceId: number) => {
     navigate(`/service/${serviceId}`);
@@ -156,47 +151,16 @@ export default function HomePage() {
 
         <section className="mb-8">
           <h2 className="text-2xl font-bold mb-4 text-[#1e293b]">Upcoming Appointments</h2>
-          
-          {isLoadingBookings ? (
-            <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : upcomingBookings.length > 0 ? (
-            <>
-              {upcomingBookings.slice(0, 2).map((booking) => (
-                <AppointmentCard 
-                  key={booking.id} 
-                  booking={booking} 
-                  onContactClick={() => handleNavigateTo(`/messages`)}
-                  onRescheduleClick={() => handleNavigateTo(`/booking/${booking.serviceId}/${booking.providerId}`)}
-                />
-              ))}
-              
-              {upcomingBookings.length > 2 && (
-                <div className="text-center mt-6">
-                  <button 
-                    className="text-primary font-medium flex items-center mx-auto py-2 hover:text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-4 text-lg"
-                    onClick={() => handleNavigateTo("/bookings")}
-                    aria-label="View all of your appointments"
-                  >
-                    View All Appointments
-                    <span className="material-icons ml-1">arrow_forward</span>
-                  </button>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="bg-white rounded-xl p-6 text-center shadow-md">
-              <span className="material-icons text-neutral-400 text-5xl mb-2">event_busy</span>
-              <p className="text-xl text-neutral-600">You have no upcoming appointments</p>
-              <button 
-                className="mt-4 text-primary font-medium text-lg hover:text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-4 py-2"
-                onClick={() => handleNavigateTo("/")}
-              >
-                Browse Services
-              </button>
-            </div>
-          )}
+          <div className="bg-white rounded-xl p-6 text-center shadow-md">
+            <span className="material-icons text-neutral-400 text-5xl mb-2">event_busy</span>
+            <p className="text-xl text-neutral-600">You have no upcoming appointments</p>
+            <button 
+              className="mt-4 text-primary font-medium text-lg hover:text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-4 py-2"
+              onClick={() => handleNavigateTo("/")}
+            >
+              Browse Services
+            </button>
+          </div>
         </section>
       </main>
 
