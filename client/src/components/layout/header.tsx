@@ -10,7 +10,7 @@ export default function Header({ onHelpClick }: HeaderProps) {
     <header className="bg-white p-4 shadow-sm border-b">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/">
-          <a className="text-2xl font-bold text-[#1e293b]">Care Assistant</a>
+          <a className="text-2xl font-bold text-[#1e293b]">Ease Up</a>
         </Link>
         <div className="flex items-center gap-4">
           <button 

@@ -70,7 +70,7 @@ export default function HomePage() {
       
       <main className="flex-1 container mx-auto p-4 md:p-6">
         <section className="mb-6">
-          <h1 className="text-3xl font-bold text-[#1e293b] mb-1">Care Assistant</h1>
+          <h1 className="text-3xl font-bold text-[#1e293b] mb-1">Ease Up</h1>
           <p className="text-lg text-[#475569]">How can we help you today?</p>
         </section>
 
