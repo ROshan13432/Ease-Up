@@ -8,17 +8,21 @@ import BookingPage from "@/pages/booking-page";
 import ProfilePage from "@/pages/profile-page";
 import BookingsPage from "@/pages/bookings-page";
 import MessagesPage from "@/pages/messages-page";
+import AuthPage from "@/pages/auth-page";
 import NotFound from "@/pages/not-found";
+import { AuthProvider } from "@/hooks/use-auth";
+import { ProtectedRoute } from "@/lib/protected-route";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={HomePage} />
       <Route path="/service/:id" component={ServiceDetailsPage} />
-      <Route path="/booking/:serviceId/:providerId" component={BookingPage} />
-      <Route path="/profile" component={ProfilePage} />
-      <Route path="/bookings" component={BookingsPage} />
-      <Route path="/messages" component={MessagesPage} />
+      <Route path="/auth" component={AuthPage} />
+      <ProtectedRoute path="/booking/:serviceId/:providerId" component={BookingPage} />
+      <ProtectedRoute path="/profile" component={ProfilePage} />
+      <ProtectedRoute path="/bookings" component={BookingsPage} />
+      <ProtectedRoute path="/messages" component={MessagesPage} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -27,8 +31,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

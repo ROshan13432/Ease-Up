@@ -4,6 +4,8 @@ import { storage } from "./storage";
 import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication routes
+  setupAuth(app);
   // Services
   app.get("/api/services", async (req, res) => {
     try {
@@ -63,11 +65,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Bookings
   app.get("/api/bookings", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
-      const bookings = await storage.getBookingsByUser(defaultUserId);
+      const bookings = await storage.getBookingsByUser(req.user.id);
       res.json(bookings);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -75,13 +78,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/bookings", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
       const booking = await storage.createBooking({
         ...req.body,
-        userId: defaultUserId
+        userId: req.user.id
       });
       res.status(201).json(booking);
     } catch (error: any) {
@@ -90,8 +94,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/bookings/:id", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
       const bookingId = parseInt(req.params.id);
@@ -99,6 +104,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!booking) {
         return res.status(404).json({ message: "Booking not found" });
+      }
+      
+      // Verify that the booking belongs to the user
+      if (booking.userId !== req.user.id) {
+        return res.status(403).json({ message: "Not authorized to delete this booking" });
       }
       
       await storage.deleteBooking(bookingId);
@@ -110,11 +120,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Favorites
   app.get("/api/user/favorites", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
-      const favorites = await storage.getFavoriteProviders(defaultUserId);
+      const favorites = await storage.getFavoriteProviders(req.user.id);
       res.json(favorites);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -122,11 +133,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/user/favorites", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
-      await storage.addFavoriteProvider(defaultUserId, req.body.providerId);
+      await storage.addFavoriteProvider(req.user.id, req.body.providerId);
       res.sendStatus(201);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -134,11 +146,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.delete("/api/user/favorites/:providerId", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
-      await storage.removeFavoriteProvider(defaultUserId, parseInt(req.params.providerId));
+      await storage.removeFavoriteProvider(req.user.id, parseInt(req.params.providerId));
       res.sendStatus(204);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -147,11 +160,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Messages
   app.get("/api/messages/providers", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
-      const providers = await storage.getMessagedProviders(defaultUserId);
+      const providers = await storage.getMessagedProviders(req.user.id);
       res.json(providers);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -159,11 +173,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.get("/api/messages/provider/:providerId", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
-      const messages = await storage.getMessages(defaultUserId, parseInt(req.params.providerId));
+      const messages = await storage.getMessages(req.user.id, parseInt(req.params.providerId));
       res.json(messages);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
@@ -171,12 +186,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/messages", async (req, res) => {
-    // Use a default user ID since we're not requiring authentication
-    const defaultUserId = 1;
+    if (!req.isAuthenticated()) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
     
     try {
       const message = await storage.createMessage({
-        userId: defaultUserId,
+        userId: req.user.id,
         providerId: req.body.providerId,
         content: req.body.content,
         fromUser: true,
@@ -186,7 +202,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Simulate a response from the provider
       setTimeout(async () => {
         await storage.createMessage({
-          userId: defaultUserId,
+          userId: req.user.id,
           providerId: req.body.providerId,
           content: `Thank you for your message. I'll get back to you shortly.`,
           fromUser: false,
