@@ -8,6 +8,7 @@ import Header from "@/components/layout/header";
 import BottomNavigation from "@/components/layout/bottom-navigation";
 import VoiceAssistantButton from "@/components/layout/voice-assistant-button";
 import HelpOverlay from "@/components/layout/help-overlay";
+import GroceryList from "@/components/services/grocery-list";
 import { Service, Provider } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
@@ -27,7 +28,8 @@ const taskFormSchema = z.object({
   selectedTasks: z.array(z.string()),
   customTask: z.string().optional(),
   preferredTime: z.string().optional(),
-  appointmentDate: z.string().optional()
+  appointmentDate: z.string().optional(),
+  groceryItems: z.array(z.string()).optional()
 });
 
 type TaskFormValues = z.infer<typeof taskFormSchema>;
@@ -60,7 +62,8 @@ export default function ServiceDetailsPage() {
       selectedTasks: [],
       customTask: "",
       preferredTime: "",
-      appointmentDate: ""
+      appointmentDate: "",
+      groceryItems: []
     }
   });
 
@@ -77,8 +80,15 @@ export default function ServiceDetailsPage() {
       allTasks.push(data.customTask.trim());
     }
     
+    // If this is grocery shopping and we have grocery items, include them
+    let url = `/booking/${id}/provider-selection?tasks=${allTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}`;
+    
+    if (id === '3' && data.groceryItems && data.groceryItems.length > 0) {
+      url += `&groceryItems=${encodeURIComponent(JSON.stringify(data.groceryItems))}`;
+    }
+    
     // Navigate to booking page or provider selection
-    navigate(`/booking/${id}/provider-selection?tasks=${allTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}`);
+    navigate(url);
   };
 
   const handleHelpClick = () => {
@@ -278,39 +288,37 @@ export default function ServiceDetailsPage() {
                       />
                     </div>
 
-                    <div className="mt-6">
-                      <h3 className="text-lg font-medium mb-3 text-gray-800">When would you like this service?</h3>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <label className="flex items-center text-gray-700">
-                            <span className="material-icons text-gray-600 mr-2">calendar_today</span>
-                            <span>Select Date</span>
-                          </label>
-                          <input
-                            type="date"
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                            {...form.register("appointmentDate")}
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <label className="flex items-center text-gray-700">
-                            <span className="material-icons text-gray-600 mr-2">schedule</span>
-                            <span>Select Time</span>
-                          </label>
-                          <select 
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                            {...form.register("preferredTime")}
-                          >
-                            <option value="">Select time window</option>
-                            <option value="morning">Morning (8am - 12pm)</option>
-                            <option value="afternoon">Afternoon (12pm - 4pm)</option>
-                            <option value="evening">Evening (4pm - 8pm)</option>
-                          </select>
-                        </div>
+                    {/* Grocery list section for grocery shopping */}
+                    {id === "3" && (
+                      <div className="mt-6 border-t border-gray-200 pt-6">
+                        <FormField
+                          control={form.control}
+                          name="groceryItems"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormControl>
+                                <GroceryList
+                                  items={field.value || []}
+                                  onAddItem={(item) => {
+                                    field.onChange([...(field.value || []), item]);
+                                  }}
+                                  onRemoveItem={(index) => {
+                                    const newItems = [...(field.value || [])];
+                                    newItems.splice(index, 1);
+                                    field.onChange(newItems);
+                                  }}
+                                  onUpdateItems={(items) => {
+                                    field.onChange(items);
+                                  }}
+                                />
+                              </FormControl>
+                            </FormItem>
+                          )}
+                        />
                       </div>
-                    </div>
+                    )}
+
+                    {/* Date & Time selection moved to separate page per requirements */}
                     
                     <Button 
                       type="submit" 
