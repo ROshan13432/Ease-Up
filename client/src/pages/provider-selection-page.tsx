@@ -20,6 +20,7 @@ export default function ProviderSelectionPage() {
   const tasks = searchParams.get("tasks")?.split(",") || [];
   const date = searchParams.get("date") || "";
   const time = searchParams.get("time") || "";
+  const groceryItems = searchParams.get("groceryItems") || "";
 
   // Get service data
   const { data: service, isLoading: isLoadingService } = useQuery<Service>({
@@ -62,7 +63,14 @@ export default function ProviderSelectionPage() {
   };
 
   const handleBookProvider = (providerId: number) => {
-    navigate(`/booking/${serviceId}/${providerId}?tasks=${tasks.join(',')}&date=${date}&time=${time}`);
+    let url = `/booking/${serviceId}/${providerId}?tasks=${tasks.join(',')}&date=${date}&time=${time}`;
+    
+    // Add grocery items if present
+    if (groceryItems) {
+      url += `&groceryItems=${groceryItems}`;
+    }
+    
+    navigate(url);
   };
 
   return (
