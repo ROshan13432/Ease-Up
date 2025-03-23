@@ -50,6 +50,13 @@ export default function BookingPage() {
   const [showHelp, setShowHelp] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  
+  // Parse query parameters
+  const queryParams = window.location.search;
+  const searchParams = new URLSearchParams(queryParams);
+  const tasks = searchParams.get("tasks")?.split(",") || [];
+  const groceryItemsParam = searchParams.get("groceryItems") || "";
+  const groceryItems = groceryItemsParam ? JSON.parse(decodeURIComponent(groceryItemsParam)) : [];
 
   const { data: service } = useQuery<Service>({
     queryKey: [`/api/services/${serviceId}`],
@@ -64,6 +71,14 @@ export default function BookingPage() {
     queryKey: [`/api/providers/${providerId}/bookings`],
   });
 
+  // Create default notes text with grocery items if this is a grocery shopping service
+  const createDefaultNotes = () => {
+    if (serviceId === "3" && groceryItems.length > 0) {
+      return `Grocery Shopping List:\n- ${groceryItems.join("\n- ")}`;
+    }
+    return "";
+  };
+
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
@@ -71,7 +86,7 @@ export default function BookingPage() {
       providerId: parseInt(providerId),
       appointmentDate: addDays(new Date(), 1),
       appointmentTime: "",
-      notes: "",
+      notes: createDefaultNotes(),
     },
   });
 
@@ -185,6 +200,39 @@ export default function BookingPage() {
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Display tasks */}
+              {tasks.length > 0 && (
+                <div className="bg-gray-50 rounded-lg p-4 mb-4">
+                  <h3 className="text-lg font-medium mb-2">Selected Tasks:</h3>
+                  <ul className="ml-2">
+                    {tasks.map((task, index) => (
+                      <li key={index} className="flex items-start mb-1">
+                        <span className="material-icons text-primary text-sm mr-1 mt-1">check_circle</span>
+                        <span>{task}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* Display grocery list for grocery shopping service */}
+              {serviceId === "3" && groceryItems.length > 0 && (
+                <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-4">
+                  <h3 className="text-lg font-medium text-green-800 mb-2 flex items-center">
+                    <span className="material-icons mr-2">shopping_cart</span>
+                    Grocery Shopping List
+                  </h3>
+                  <ul className="ml-2">
+                    {groceryItems.map((item, index) => (
+                      <li key={index} className="flex items-start mb-1">
+                        <span className="material-icons text-green-600 text-sm mr-1 mt-1">check</span>
+                        <span className="text-green-900">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
