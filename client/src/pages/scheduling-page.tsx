@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useLocation, useRoute, useRouter } from "wouter";
+import { useState } from "react";
+import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { CalendarIcon, Clock, Loader2 } from "lucide-react";
@@ -15,15 +15,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { apiRequest } from "@/lib/queryClient";
 import { Service } from "@shared/schema";
 import Header from "@/components/layout/header";
 import BottomNavigation from "@/components/layout/bottom-navigation";
@@ -45,10 +39,12 @@ type SchedulingFormValues = z.infer<typeof schedulingFormSchema>;
 
 export default function SchedulingPage() {
   const [showHelp, setShowHelp] = useState(false);
-  const router = useRouter();
   const { id, tasks } = useParams();
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location);
+  const [_, navigate] = useLocation();
+  
+  // Parse query parameters if any
+  const queryParams = window.location.search;
+  const searchParams = new URLSearchParams(queryParams);
   const groceryItems = searchParams.get("groceryItems") || "";
   
   // Helper function to get task list
@@ -88,7 +84,7 @@ export default function SchedulingPage() {
   
   const handleNavigateBack = () => {
     // Go back to service details page
-    router.navigate(`/service/${id}`);
+    navigate(`/service/${id}`);
   };
   
   const onSubmit = (data: SchedulingFormValues) => {
@@ -103,7 +99,7 @@ export default function SchedulingPage() {
     }
     
     // Navigate to provider selection
-    router.navigate(url);
+    navigate(url);
   };
   
   return (
@@ -116,7 +112,7 @@ export default function SchedulingPage() {
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
           </div>
         ) : service ? (
-          <div className={`${getServiceBgColor(id)} text-white rounded-xl p-6 shadow-md mb-6`}>
+          <div className={`${getServiceBgColor(id || '1')} text-white rounded-xl p-6 shadow-md mb-6`}>
             <button 
               className="flex items-center text-white text-sm mb-6 hover:underline focus:outline-none focus:ring-2 focus:ring-white/50 rounded-lg px-2 py-1"
               onClick={handleNavigateBack}
@@ -230,7 +226,7 @@ export default function SchedulingPage() {
                   
                   <Button 
                     type="submit" 
-                    className={`w-full mt-8 py-6 text-lg ${getServiceBgColor(id)} hover:opacity-90 text-white font-medium rounded-lg`}
+                    className={`w-full mt-8 py-6 text-lg ${getServiceBgColor(id || '1')} hover:opacity-90 text-white font-medium rounded-lg`}
                   >
                     Continue to Select Provider
                   </Button>
@@ -244,7 +240,7 @@ export default function SchedulingPage() {
             <p className="text-xl text-neutral-600">Service not found</p>
             <button 
               className="mt-4 text-primary font-medium text-lg hover:text-primary-dark focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-4 py-2"
-              onClick={() => router.navigate("/")}
+              onClick={() => navigate("/")}
             >
               Return to Services
             </button>

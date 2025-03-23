@@ -94,7 +94,7 @@ export default function BookingPage() {
     onSuccess: () => {
       toast({
         title: "Booking Confirmed!",
-        description: "Your appointment has been successfully scheduled.",
+        description: "Your appointment has been successfully scheduled. You will receive a confirmation call 24 hours before the appointment.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/bookings"] });
       navigate("/bookings");
@@ -117,7 +117,7 @@ export default function BookingPage() {
   };
 
   const handleNavigateBack = () => {
-    navigate(`/service/${serviceId}`);
+    navigate(`/booking/${serviceId}/provider-selection${window.location.search}`);
   };
 
   // Check if a time slot is already booked for the selected date
@@ -281,6 +281,17 @@ export default function BookingPage() {
                   </FormItem>
                 )}
               />
+              
+              {/* Confirmation call notification */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 flex items-start">
+                <span className="material-icons text-blue-600 mr-3 text-xl mt-0.5">info</span>
+                <div>
+                  <p className="font-medium text-lg">Confirmation Call</p>
+                  <p className="mt-1">
+                    You will receive a confirmation call from your provider 24 hours before your scheduled appointment.
+                  </p>
+                </div>
+              </div>
               
               <Button 
                 type="submit" 
