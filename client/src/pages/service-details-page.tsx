@@ -80,14 +80,15 @@ export default function ServiceDetailsPage() {
       allTasks.push(data.customTask.trim());
     }
     
-    // If this is grocery shopping and we have grocery items, include them
-    let url = `/booking/${id}/provider-selection?tasks=${allTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}`;
+    // Create URL to scheduling page with tasks as path parameter
+    let url = `/scheduling/${id}/${encodeURIComponent(allTasks.join(','))}`;
     
+    // Add grocery items as query parameter if this is grocery service
     if (id === '3' && data.groceryItems && data.groceryItems.length > 0) {
-      url += `&groceryItems=${encodeURIComponent(JSON.stringify(data.groceryItems))}`;
+      url += `?groceryItems=${encodeURIComponent(JSON.stringify(data.groceryItems))}`;
     }
     
-    // Navigate to booking page or provider selection
+    // Navigate to scheduling page
     navigate(url);
   };
 

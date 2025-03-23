@@ -52,7 +52,13 @@ export default function ProviderSelectionPage() {
   };
 
   const handleNavigateBack = () => {
-    navigate(`/service/${serviceId}`);
+    // Go back to scheduling page if date and tasks are available
+    if (date && tasks.length > 0) {
+      navigate(`/scheduling/${serviceId}/${encodeURIComponent(tasks.join(','))}`);
+    } else {
+      // Otherwise go back to service details
+      navigate(`/service/${serviceId}`);
+    }
   };
 
   const handleBookProvider = (providerId: number) => {
@@ -67,10 +73,10 @@ export default function ProviderSelectionPage() {
         <button 
           className="flex items-center text-primary text-lg mb-4 hover:text-primary-dark transition-all focus:outline-none focus:ring-2 focus:ring-primary rounded-lg px-4 py-2"
           onClick={handleNavigateBack}
-          aria-label="Go back to service details"
+          aria-label="Go back to previous step"
         >
           <span className="material-icons mr-2">arrow_back</span>
-          <span>Back to Service Details</span>
+          <span>{date && tasks.length > 0 ? "Back to Schedule Selection" : "Back to Service Details"}</span>
         </button>
         
         <div className="bg-white rounded-xl p-6 shadow-md mb-6">
