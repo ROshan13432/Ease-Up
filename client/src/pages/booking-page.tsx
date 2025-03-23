@@ -185,80 +185,84 @@ export default function BookingPage() {
           
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="appointmentDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel className="text-lg mb-2">Appointment Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="appointmentDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel className="text-lg mb-2">Appointment Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "pl-3 text-left font-normal h-14 text-lg",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "EEEE, MMMM d, yyyy")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-5 w-5 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => 
+                              isBefore(date, startOfDay(new Date())) || 
+                              // Disable dates more than 30 days in the future
+                              isAfter(date, addDays(new Date(), 30))
+                            }
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage className="text-base" />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="appointmentTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-lg mb-2">Appointment Time</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "pl-3 text-left font-normal h-14 text-lg",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "EEEE, MMMM d, yyyy")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-5 w-5 opacity-50" />
-                          </Button>
+                          <SelectTrigger className="h-14 text-lg">
+                            <SelectValue placeholder="Select a time" />
+                          </SelectTrigger>
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => 
-                            isBefore(date, startOfDay(new Date())) || 
-                            // Disable dates more than 30 days in the future
-                            isAfter(date, addDays(new Date(), 30))
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage className="text-base" />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="appointmentTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-lg mb-2">Appointment Time</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="h-14 text-lg">
-                          <SelectValue placeholder="Select a time" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {availableTimeSlots.length > 0 ? (
-                          availableTimeSlots.map((slot) => (
-                            <SelectItem key={slot} value={slot} className="text-lg">
-                              {slot.replace(":00", "")}:00
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <div className="p-2 text-center text-muted-foreground">
-                            No available times for this date
+                        <SelectContent>
+                          <div className="grid grid-cols-2 gap-1 p-1">
+                            {availableTimeSlots.length > 0 ? (
+                              availableTimeSlots.map((slot) => (
+                                <SelectItem key={slot} value={slot} className="text-lg rounded-md p-2 cursor-pointer hover:bg-primary/10">
+                                  {slot.replace(":00", "")}:00
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="p-2 text-center text-muted-foreground col-span-2">
+                                No available times for this date
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage className="text-base" />
-                  </FormItem>
-                )}
-              />
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="text-base" />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <FormField
                 control={form.control}

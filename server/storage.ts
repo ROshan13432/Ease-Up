@@ -258,7 +258,7 @@ export class MemStorage implements IStorage {
           "General Cleaning: Dusting, vacuuming, mopping, and bathroom cleaning",
           "Meal Preparation: Cooking meals, meal planning, and kitchen organization",
           "Laundry Services: Washing, drying, folding, and ironing clothes",
-          "Deep Cleaning: Intensive cleaning of specific areas or entire home",
+          "Deep Cleaning Services: Intensive cleaning of specific areas or entire home",
           "Bedroom Care: Changing linens, organizing, and deep cleaning"
         ]
       },
@@ -306,6 +306,20 @@ export class MemStorage implements IStorage {
       },
       {
         id: 5,
+        name: "Repairs",
+        shortDescription: "Emergency and non-emergency home repair services",
+        description: "Emergency and non-emergency home repair services",
+        icon: "build",
+        inclusions: [
+          "Plumbing repairs: Fixing leaks, clogs, and basic plumbing issues",
+          "Electrical repairs: Light fixtures, outlets, and basic electrical work",
+          "Appliance troubleshooting: Basic diagnostics and minor repairs",
+          "Furniture assembly and repairs",
+          "Small carpentry and home fixes"
+        ]
+      },
+      {
+        id: 6,
         name: "Other Services",
         shortDescription: "Request any other assistance not listed above",
         description: "Request any other assistance not listed above",
@@ -315,7 +329,7 @@ export class MemStorage implements IStorage {
           "Technology help",
           "Pet care",
           "Errands and deliveries",
-          "Small repairs and installations"
+          "Custom assistance requests"
         ]
       }
     ];
@@ -375,6 +389,15 @@ export class MemStorage implements IStorage {
       },
       {
         id: 6,
+        name: "James Martinez",
+        experience: "15 years experience, licensed handyman, plumbing and electrical certified",
+        rating: 4.8,
+        reviews: 142,
+        tags: ["Emergency Available", "Licensed Professional", "All Tools Provided"],
+        services: ["Repairs"]
+      },
+      {
+        id: 7,
         name: "Emily Rodriguez",
         experience: "7 years experience, background checked, versatile assistance provider",
         rating: 4.6,

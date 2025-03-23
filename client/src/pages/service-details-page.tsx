@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 // Define schema for the form
 const taskFormSchema = z.object({
   selectedTasks: z.array(z.string()),
+  customTask: z.string().optional(),
   preferredTime: z.string().optional(),
   appointmentDate: z.string().optional()
 });
@@ -43,7 +44,8 @@ export default function ServiceDetailsPage() {
       "2": "bg-[#7E3A00]", // Brown for Yard & Maintenance
       "3": "bg-[#0A5E44]", // Dark green for Grocery Shopping
       "4": "bg-[#841C44]", // Maroon/burgundy for Caregiver Services
-      "5": "bg-[#4B2182]", // Purple for Other Services
+      "5": "bg-[#336699]", // Blue for Repairs
+      "6": "bg-[#4B2182]", // Purple for Other Services
     };
     return colors[serviceId] || "bg-primary";
   };
@@ -56,6 +58,7 @@ export default function ServiceDetailsPage() {
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
       selectedTasks: [],
+      customTask: "",
       preferredTime: "",
       appointmentDate: ""
     }
@@ -67,8 +70,15 @@ export default function ServiceDetailsPage() {
 
   const onSubmit = (data: TaskFormValues) => {
     console.log("Form submitted:", data);
+    
+    // Create array of tasks including selected tasks and custom task if provided
+    const allTasks = [...data.selectedTasks];
+    if (data.customTask && data.customTask.trim() !== '') {
+      allTasks.push(data.customTask.trim());
+    }
+    
     // Navigate to booking page or provider selection
-    navigate(`/booking/${id}/provider-selection?tasks=${data.selectedTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}`);
+    navigate(`/booking/${id}/provider-selection?tasks=${allTasks.join(',')}&date=${data.appointmentDate}&time=${data.preferredTime}`);
   };
 
   const handleHelpClick = () => {
@@ -239,30 +249,67 @@ export default function ServiceDetailsPage() {
                       </div>
                     ))}
 
-                    <div className="mt-6 space-y-4">
-                      <div className="flex items-center">
-                        <span className="material-icons text-gray-600 mr-2">schedule</span>
-                        <select 
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                          {...form.register("preferredTime")}
-                        >
-                          <option value="">Select preferred time</option>
-                          <option value="morning">Morning (8am - 12pm)</option>
-                          <option value="afternoon">Afternoon (12pm - 4pm)</option>
-                          <option value="evening">Evening (4pm - 8pm)</option>
-                        </select>
+                    {/* Other (custom) task input */}
+                    <div className="border border-gray-200 rounded-lg p-4 mb-3">
+                      <div className="flex items-start mb-2">
+                        <div className="mr-4">
+                          <span className="material-icons text-gray-600">add_circle</span>
+                        </div>
+                        <div>
+                          <h4 className="font-medium text-gray-800">Other (specify your own task)</h4>
+                          <p className="text-sm text-gray-600">Let us know about any additional tasks you need help with</p>
+                        </div>
                       </div>
-                      
-                      <div className="flex items-center">
-                        <span className="material-icons text-gray-600 mr-2">calendar_today</span>
-                        <input
-                          type="date"
-                          className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
-                          {...form.register("appointmentDate")}
-                        />
-                      </div>
-                      
+                      <FormField
+                        control={form.control}
+                        name="customTask"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <input
+                                type="text"
+                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                                placeholder="Enter custom task details..."
+                                {...field}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
+                    <div className="mt-6">
+                      <h3 className="text-lg font-medium mb-3 text-gray-800">When would you like this service?</h3>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="flex items-center text-gray-700">
+                            <span className="material-icons text-gray-600 mr-2">calendar_today</span>
+                            <span>Select Date</span>
+                          </label>
+                          <input
+                            type="date"
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                            {...form.register("appointmentDate")}
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <label className="flex items-center text-gray-700">
+                            <span className="material-icons text-gray-600 mr-2">schedule</span>
+                            <span>Select Time</span>
+                          </label>
+                          <select 
+                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                            {...form.register("preferredTime")}
+                          >
+                            <option value="">Select time window</option>
+                            <option value="morning">Morning (8am - 12pm)</option>
+                            <option value="afternoon">Afternoon (12pm - 4pm)</option>
+                            <option value="evening">Evening (4pm - 8pm)</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                     
                     <Button 
