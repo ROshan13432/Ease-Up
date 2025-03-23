@@ -20,6 +20,9 @@ const registerSchema = insertUserSchema.extend({
   fullName: z.string().min(2, {
     message: "Full name must be at least 2 characters",
   }),
+  phoneNumber: z.string().min(10, {
+    message: "Valid phone number is required",
+  }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
@@ -57,6 +60,7 @@ export default function AuthPage() {
       password: "",
       confirmPassword: "",
       fullName: "",
+      phoneNumber: "",
     },
   });
 
@@ -247,6 +251,20 @@ export default function AuthPage() {
                           <FormLabel className="text-lg">Confirm Password</FormLabel>
                           <FormControl>
                             <Input type="password" placeholder="Confirm your password" className="text-lg py-6" {...field} />
+                          </FormControl>
+                          <FormMessage className="text-base" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-lg">Phone Number</FormLabel>
+                          <FormControl>
+                            <Input type="tel" placeholder="Enter your phone number" className="text-lg py-6" {...field} />
                           </FormControl>
                           <FormMessage className="text-base" />
                         </FormItem>

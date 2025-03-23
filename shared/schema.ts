@@ -18,6 +18,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
   fullName: true,
+  phoneNumber: true,
 });
 
 // Service schema
